@@ -1,4 +1,5 @@
 #include "eif.hxx"
+#include <string>
 
 
 /********************************

@@ -77,7 +77,7 @@ class iForest(object):
         ExtensionLevel : int
             Specifies degree of freedom in choosing the hyperplanes for dividing up data. Must be smaller than the dimension n of the dataset.
         """
-
+        print("initializing...")
         self.ntrees = ntrees
         self.X = X
         self.nobjs = len(X)

@@ -1,5 +1,7 @@
 #include "eif.hxx"
 #include <string>
+#include <thread> 
+#include <omp.h>
 
 
 /********************************
@@ -282,6 +284,7 @@ double Path::find_path (Node* node_in)
 iForest::iForest (int ntrees_in, int sample_in, int limit_in=0, int exlevel_in=0, int random_seed_in=-1)
 {
 
+	std::cout << "Hello from C++ " << std::endl;
 	ntrees = ntrees_in;
 	sample = sample_in;
 	limit = limit_in;
@@ -386,17 +389,56 @@ void iForest::predict (double* S, double* X_in=NULL, int size_in=0)
 	double htemp, havg;
 	for (int i=0; i<size_in; i++)
 	{
+
 		htemp = 0.0;
+		/*
+		for (int j=0; j<ntrees; j++)
+		{
+			
+		}
+		
+		FCriticalSection Mutex;
+		ParallelFor(ntrees, (int j)
+		{
+			
+			Path path (dim, &X_in[i*dim], Trees[j]);
+			Mutex.Lock();
+			htemp += path.pathlength;
+			Mutex.Unlock();
+		});
+		*/
+		/*
+		#pragma omp parallel for shared(htemp)
+		for (int j=0; j<ntrees; j++)
+		{
+			htemp += calculate_path_one_tree(dim, &X_in[i*dim], Trees[j]);
+		}
+		*/
+	
+		#pragma omp parallel for schedule (static,1) num_threads(2) /////
 		for (int j=0; j<ntrees; j++)
 		{
 			Path path (dim, &X_in[i*dim], Trees[j]);
-			htemp += path.pathlength;
+			
+			//#pragma omp critical
+			//htemp += path.pathlength; /////////
+			htemp += 1;
 		}
 		havg = htemp/ntrees;
+		std::cout << htemp << std::endl;
 		S[i] = std::pow(2.0, -havg/c);
 	}
 
 }
+
+double iForest::calculate_path_one_tree(int dim_in, double* x_in, iTree itree_in)
+{
+  	Path path (dim_in, x_in, itree_in);
+	double htemp = path.pathlength;
+	return htemp;
+}
+
+
 void iForest::predictSingleTree (double* S, double* X_in=NULL, int size_in=0, int iTree_index=0)
 {
 

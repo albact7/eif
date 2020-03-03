@@ -118,7 +118,7 @@ class iForest
         ~iForest ();
         void fit (double*, int, int);
         void predict (double*, double*, int);
-        double calculate_path_one_tree(int, double*, iTree);
+        double calculate_path_one_tree(int, double*, iTree, int);
         void predictSingleTree (double*, double*, int, int);
 	    void OutputTreeNodes (int);
 

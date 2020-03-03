@@ -286,8 +286,6 @@ double Path::find_path (Node* node_in)
  ****************************/
 iForest::iForest (int ntrees_in, int sample_in, int limit_in=0, int exlevel_in=0, int random_seed_in=-1)
 {
-
-	std::cout << "Hello from C++ " << std::endl;
 	ntrees = ntrees_in;
 	sample = sample_in;
 	limit = limit_in;
@@ -359,11 +357,41 @@ void iForest::fit (double* X_in, int nobjs_in, int dim_in)
 	if (!CheckExtensionLevel ()) return;
 
 	std::vector<double> Xsubset;
-	int i = 0;
-	#pragma omp parallel for private(i, Xsubset) shared(Trees) num_threads(4)
+
+	int t = 0;
+
+	std::vector<std::future<void>> futures;
+	int threads = 8;
+	int chunkTrees = ntrees/threads;
+	for (t=0; t<threads; t++)
+	{
+		futures.push_back (std::async(std::launch::async,[](int sample, std::vector<double> Xsubset, 
+		int dim, int random_seed, int nobjs, double* X, int limit, int exlevel,
+		iTree Trees[]= new iTree[0], int ci=0, int ce=0)
+		{
+			for (int i=ci; i<ce; i++)
+			{
+				/* Select a random subset of X_in of size sample_in */
+				RANDOM_ENGINE random_engine (random_seed+i);
+				std::vector<int> sample_index = sample_without_replacement (sample, nobjs, random_engine);
+				Xsubset.clear();
+				for (int j=0; j<sample; j++)
+				{
+					for (int k=0; k<dim; k++)
+					{
+						int index = k+(sample_index[j]-1)*dim;
+						Xsubset.push_back(X[index]);
+					}
+				}
+
+				Trees[i].build_tree (&Xsubset[0], sample, 0, limit, dim, random_engine, exlevel);
+			}
+		}, sample, Xsubset, dim, random_seed, nobjs, X, limit, exlevel, Trees, t*chunkTrees, chunkTrees*(t+1)));
+	}
+	/*
 	for (i=0; i<ntrees; i++)
 	{
-		/* Select a random subset of X_in of size sample_in */
+		// Select a random subset of X_in of size sample_in 
 		RANDOM_ENGINE random_engine (random_seed+i);
 		std::vector<int> sample_index = sample_without_replacement (sample, nobjs, random_engine);
 		Xsubset.clear();
@@ -378,21 +406,10 @@ void iForest::fit (double* X_in, int nobjs_in, int dim_in)
 
 		Trees[i].build_tree (&Xsubset[0], sample, 0, limit, dim, random_engine, exlevel);
 	}
+	*/
 
 }
 
-int twice(int m) {
-  	return 2 * m;
-}
-
-//double iForest::calculate_path_one_tree(int dim_in, double* x_in, iTree itree_in)
-double iForest::calculate_path_one_tree(int dim=0, double* X_in=NULL, iTree itree_in=iTree(), int i=0)
-{
-  	//Path path (dim_in, x_in, itree_in);
-	Path path (dim, &X_in[i*dim], itree_in);
-	double htemp = path.pathlength;
-	return htemp;
-}
 
 void iForest::predict (double* S, double* X_in=NULL, int size_in=0)
 {
@@ -408,77 +425,12 @@ void iForest::predict (double* S, double* X_in=NULL, int size_in=0)
 	{
 
 		htemp = 0.0;
-		/*
-		for (int j=0; j<ntrees; j++)
-		{
-			
-		}
-		
-		FCriticalSection Mutex;
-		ParallelFor(ntrees, (int j)
-		{
-			
-			Path path (dim, &X_in[i*dim], Trees[j]);
-			Mutex.Lock();
-			htemp += path.pathlength;
-			Mutex.Unlock();
-		});
-		*/
-		/*
-		#pragma omp parallel for shared(htemp)
-		for (int j=0; j<ntrees; j++)
-		{
-			htemp += calculate_path_one_tree(dim, &X_in[i*dim], Trees[j]);
-		}
-		*/
-	
-		omp_set_num_threads(4);
 		int j = 0;
-		/*
-		#pragma omp parallel for private(j, ntrees, dim, X_in, Trees) shared(htemp)//for schedule (static,1) num_threads(2) /////
-		for (j=0; j<ntrees; j++)
-		{
-			Path path (dim, &X_in[i*dim], Trees[j]);
-			//#pragma omp critical
-			//htemp += path.pathlength; /////////
-			//htemp += 1;
-		}
-		*/
-		//auto ints = boost::irange(0, ntrees);
-		/*
-		std::for_each_n(std::execution::par, std::begin(Tree), std::end(Tree), [](iTree j)
-		{
-			Path path (dim, &X_in[i*dim], j);
-			//#pragma omp critical
-			//htemp += path.pathlength; /////////
-			htemp += 1;
-		}
-		);*/
-		/*
+
 		std::vector<std::future<double>> futures;
-		for (j=0; j<ntrees; j++)
-		{
-			futures.push_back (std::async(std::launch::async,[](int dim=0, double* X_in=NULL, iTree itree_in=iTree(), int i=0)
-			{
-				//Path path (dim_in, x_in, itree_in);
-				Path path (dim, &X_in[i*dim], itree_in);
-				//double htemp = path.pathlength;
-				double htemp = 1;
-				return htemp;
-			}, dim, X_in, Trees[j], i));
-			//futures.push_back( std::async(calculate_path_one_tree(dim, X_in, Trees[j], i)));
-			//Path path (dim, &X_in[i*dim], Trees[j]);
-			//#pragma omp critical
-			//htemp += path.pathlength; /////////
-			//htemp += 1;
-		}
-		for(auto &e : futures) {
-			htemp += e.get();
-		}
-		*/
-		std::vector<std::future<double>> futures;
-		int chunkTrees = ntrees/2;
-		for (j=0; j<2; j++)
+		int threads = 8;
+		int chunkTrees = ntrees/threads;
+		for (j=0; j<threads; j++)
 		{
 			futures.push_back (std::async(std::launch::async,[](int dim=0, double* X_in=NULL, iTree Trees[]= new iTree[0], int i=0, int ci=0, int ce=0)
 			{
@@ -486,17 +438,10 @@ void iForest::predict (double* S, double* X_in=NULL, int size_in=0)
 				for (int k=ci; k<ce; k++)
 				{
 					Path path (dim, &X_in[i*dim], Trees[k]);
-					//#pragma omp critical
-					//htemp += path.pathlength; /////////
 					htemp += path.pathlength;
 				}
 				return htemp;
 			}, dim, X_in, Trees, i, j*chunkTrees, (j+1)*chunkTrees));
-			//futures.push_back( std::async(calculate_path_one_tree(dim, X_in, Trees[j], i)));
-			//Path path (dim, &X_in[i*dim], Trees[j]);
-			//#pragma omp critical
-			//htemp += path.pathlength; /////////
-			//htemp += 1;
 		}
 		for(auto &e : futures) {
 			htemp += e.get();

@@ -361,7 +361,7 @@ void iForest::fit (double* X_in, int nobjs_in, int dim_in)
 	int t = 0;
 
 	std::vector<std::future<void>> futures;
-	int threads = 8;
+	int threads = 6;
 	int chunkTrees = ntrees/threads;
 	for (t=0; t<threads; t++)
 	{
@@ -388,25 +388,6 @@ void iForest::fit (double* X_in, int nobjs_in, int dim_in)
 			}
 		}, sample, Xsubset, dim, random_seed, nobjs, X, limit, exlevel, Trees, t*chunkTrees, chunkTrees*(t+1)));
 	}
-	/*
-	for (i=0; i<ntrees; i++)
-	{
-		// Select a random subset of X_in of size sample_in 
-		RANDOM_ENGINE random_engine (random_seed+i);
-		std::vector<int> sample_index = sample_without_replacement (sample, nobjs, random_engine);
-		Xsubset.clear();
-		for (int j=0; j<sample; j++)
-		{
-			for (int k=0; k<dim; k++)
-			{
-				int index = k+(sample_index[j]-1)*dim;
-				Xsubset.push_back(X[index]);
-			}
-		}
-
-		Trees[i].build_tree (&Xsubset[0], sample, 0, limit, dim, random_engine, exlevel);
-	}
-	*/
 
 }
 
@@ -428,7 +409,7 @@ void iForest::predict (double* S, double* X_in=NULL, int size_in=0)
 		int j = 0;
 
 		std::vector<std::future<double>> futures;
-		int threads = 8;
+		int threads = 6;
 		int chunkTrees = ntrees/threads;
 		for (j=0; j<threads; j++)
 		{

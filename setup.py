@@ -31,13 +31,17 @@ setup(
                  include_dirs=[numpy.get_include()],
                  language="c++")],
     scripts=[],
-    py_modules=['eif_old', 'version'],
+    py_modules=['version'],
     packages=[],
     license='License.txt',
     include_package_data=True,
-    description='Extended Isolation Forest for anomaly detection',
+    description='Extended Isolation Forest for anomaly detection parallelized',
     long_description=read('README.md'),
     long_description_content_type='text/markdown',
+<<<<<<< HEAD
     url='https://github.com/albact7/eif.git',
+=======
+    url='https://github.com/albact7/eif',
+>>>>>>> d8b8438553fd24a117bc2ae157a132815b3107b1
     install_requires=["numpy", "cython"],
 )

@@ -329,6 +329,7 @@ bool iForest::CheckExtensionLevel ()
 
 }
 
+
 bool iForest::CheckSampleSize ()
 {
 
@@ -361,7 +362,7 @@ void iForest::fit (double* X_in, int nobjs_in, int dim_in)
 	int t = 0;
 
 	std::vector<std::future<void>> futures;
-	int threads = 6;
+	int threads = 10;
 	int chunkTrees = ntrees/threads;
 	for (t=0; t<threads; t++)
 	{
@@ -409,7 +410,7 @@ void iForest::predict (double* S, double* X_in=NULL, int size_in=0)
 		int j = 0;
 
 		std::vector<std::future<double>> futures;
-		int threads = 6;
+		int threads = 10;
 		int chunkTrees = ntrees/threads;
 		for (j=0; j<threads; j++)
 		{

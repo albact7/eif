@@ -23,7 +23,7 @@ exec(open('version.py').read())
 setup(
     name='eif',
     version=__version__,
-    author='Matias Carrasco Kind , Sahand Hariri, Seng Keat Yeoh',
+    author='Alba Cotarelo, Antonio Paya, Matias Carrasco Kind , Sahand Hariri, Seng Keat Yeoh',
     author_email='mcarras2@illinois.edu',
     cmdclass={'build_ext': build_ext},
     ext_modules=[Extension("eif",
@@ -38,6 +38,6 @@ setup(
     description='Extended Isolation Forest for anomaly detection',
     long_description=read('README.md'),
     long_description_content_type='text/markdown',
-    url='https://github.com/sahandha/eif',
+    url='https://github.com/albact7/eif.git',
     install_requires=["numpy", "cython"],
 )

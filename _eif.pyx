@@ -22,6 +22,7 @@ cdef class iForest:
     cdef int tree_index
     cdef int exlevel
     cdef __eif.iForest* thisptr
+    cdef int seed
 
     @cython.boundscheck(False)
     @cython.wraparound(False)
@@ -38,6 +39,10 @@ cdef class iForest:
         self._limit = self.thisptr.limit
         self.exlevel = ExtensionLevel
         self.thisptr.fit (<double*> np.PyArray_DATA(X), self.size_X, self.dim)
+        global X1
+        X1 = X.copy()
+        self.seed = seed
+        print(type(X))
 
     @property
     def ntrees(self):
@@ -61,7 +66,6 @@ cdef class iForest:
             if not X_in.flags['C_CONTIGUOUS']:
                 X_in = X_in.copy(order='C')
             S = np.empty(X_in.shape[0], dtype=np.float64, order='C')
-            print(X_in.shape[0])
             self.thisptr.predict (<double*> np.PyArray_DATA(S), <double*> np.PyArray_DATA(X_in), X_in.shape[0])
         return S
 
@@ -81,3 +85,11 @@ cdef class iForest:
 
     def output_tree_nodes (self, int tree_index):
         self.thisptr.OutputTreeNodes (tree_index)
+
+    def __reduce__(self):
+        return iForest(X1, self._ntrees, self.sample, self._limit, self.exlevel, self.seed)
+
+    def rebuild(self, np.ndarray[double, ndim=2] X not None, int ntrees, int sample_size, int limit=0, int ExtensionLevel=0, int seed=-1):
+        newEif = iForest(X, ntrees, sample_size, limit, ExtensionLevel, seed)
+ 
+        return newEif

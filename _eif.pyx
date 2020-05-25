@@ -42,7 +42,6 @@ cdef class iForest:
         global X1
         X1 = X.copy()
         self.seed = seed
-        print(type(X))
 
     @property
     def ntrees(self):

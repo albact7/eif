@@ -32,7 +32,7 @@ setup(
                  language="c++")],
     scripts=[],
     py_modules=['version'],
-    packages=find_packages(),
+    packages=[],
     license='License.txt',
     include_package_data=True,
     description='Extended Isolation Forest for anomaly detection parallelized',

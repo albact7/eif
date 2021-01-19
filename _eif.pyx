@@ -65,7 +65,7 @@ cdef class iForest:
             if not X_in.flags['C_CONTIGUOUS']:
                 X_in = X_in.copy(order='C')
             S = np.empty(X_in.shape[0], dtype=np.float64, order='C')
-            self.thisptr.predict (<double*> np.PyArray_DATA(S), <double*> np.PyArray_DATA(X_in), X_in.shape[0], n_threads)
+            self.thisptr.predict (<double*> np.PyArray_DATA(S), <double*> np.PyArray_DATA(X_in), n_threads, X_in.shape[0])
         return S
 
     @cython.boundscheck(False)

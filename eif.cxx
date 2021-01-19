@@ -393,7 +393,7 @@ void iForest::fit (double* X_in, int nobjs_in, int dim_in)
 }
 
 
-void iForest::predict (double* S, double* X_in=NULL, int size_in=0)
+void iForest::predict (double* S, double* X_in=NULL, int n_threads=10, int size_in=0)
 {
 
 	if (X_in == NULL)
@@ -410,7 +410,7 @@ void iForest::predict (double* S, double* X_in=NULL, int size_in=0)
 		int j = 0;
 
 		std::vector<std::future<double>> futures;
-		int threads = 10;
+		int threads = n_threads;
 		int chunkTrees = ntrees/threads;
 		for (j=0; j<threads; j++)
 		{

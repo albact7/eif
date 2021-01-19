@@ -56,16 +56,16 @@ cdef class iForest:
 
     @cython.boundscheck(False)
     @cython.wraparound(False)
-    def compute_paths (self, np.ndarray[double, ndim=2] X_in=None):
+    def compute_paths (self, np.ndarray[double, ndim=2] X_in=None, int n_threads=10):
         cdef np.ndarray[double, ndim=1, mode="c"] S
         if X_in is None:
             S = np.empty(self.size_X, dtype=np.float64, order='C')
-            self.thisptr.predict (<double*> np.PyArray_DATA(S), NULL, 0)
+            self.thisptr.predict (<double*> np.PyArray_DATA(S), NULL, 0, n_threads)
         else:
             if not X_in.flags['C_CONTIGUOUS']:
                 X_in = X_in.copy(order='C')
             S = np.empty(X_in.shape[0], dtype=np.float64, order='C')
-            self.thisptr.predict (<double*> np.PyArray_DATA(S), <double*> np.PyArray_DATA(X_in), X_in.shape[0])
+            self.thisptr.predict (<double*> np.PyArray_DATA(S), <double*> np.PyArray_DATA(X_in), X_in.shape[0], n_threads)
         return S
 
     @cython.boundscheck(False)

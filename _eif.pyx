@@ -60,7 +60,7 @@ cdef class iForest:
         cdef np.ndarray[double, ndim=1, mode="c"] S
         if X_in is None:
             S = np.empty(self.size_X, dtype=np.float64, order='C')
-            self.thisptr.predict (<double*> np.PyArray_DATA(S), NULL, 0, n_threads)
+            self.thisptr.predict (<double*> np.PyArray_DATA(S), NULL, n_threads, 0)
         else:
             if not X_in.flags['C_CONTIGUOUS']:
                 X_in = X_in.copy(order='C')

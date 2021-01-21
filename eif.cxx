@@ -348,7 +348,7 @@ bool iForest::CheckSampleSize ()
 
 }
 
-void iForest::fit (double* X_in, int nobjs_in, int dim_in)
+void iForest::fit (double* X_in, int nobjs_in, int dim_in, int threads)
 {
 
 	X = X_in;
@@ -362,7 +362,7 @@ void iForest::fit (double* X_in, int nobjs_in, int dim_in)
 	int t = 0;
 
 	std::vector<std::future<void>> futures;
-	int threads = 10;
+	
 	int chunkTrees = ntrees/threads;
 	for (t=0; t<threads; t++)
 	{
